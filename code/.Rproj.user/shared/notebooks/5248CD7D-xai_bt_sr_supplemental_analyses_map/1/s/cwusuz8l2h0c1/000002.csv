@@ -1,0 +1,4 @@
+"0","df <- df %>%"
+"0","  group_by(subject_id) %>% "
+"0","  mutate(z_log_rt =scale(log_rt)) %>% "
+"0","  ungroup()"

@@ -1,0 +1,1 @@
+"0","grid.arrange(highlights_match_ai, highlights_match_gt,  examples_match_ai, examples_match_gt, ncol=2, nrow = 2, heights=c(1, 1), newpage = TRUE)"

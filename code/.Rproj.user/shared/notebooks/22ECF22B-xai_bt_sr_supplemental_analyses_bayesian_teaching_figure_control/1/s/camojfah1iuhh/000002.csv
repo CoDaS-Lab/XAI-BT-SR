@@ -1,0 +1,7 @@
+"0","df <- df %>% "
+"0","  mutate(p_learner_matches_target_model = exp(logp_learner_matches_target_model),"
+"0","         p_learner_bins = cut(p_learner_matches_target_model, breaks = seq(0, 1, 0.25),"
+"0","                              include.lowest = T, labels = c(""0-25%"", ""26-50%"", ""51-75%"","
+"0","                                                             ""76-100%"")),"
+"0","         resnet_perf_bins = cut(resnet_perf, breaks = seq(0, 1, 0.25), include.lowest = T, labels = c(""0-25%"", ""26-50%"", ""51-75%"","
+"0","                                                             ""76-100%"")))"

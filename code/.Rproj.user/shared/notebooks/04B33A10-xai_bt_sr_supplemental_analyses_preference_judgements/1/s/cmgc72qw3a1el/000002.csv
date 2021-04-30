@@ -1,0 +1,7 @@
+"0","pref_df <- pref_df %>%"
+"0","  mutate(chose_bin4 = case_when("
+"0","    (response == ""Top"" & bin4_position == ""up"") ~ 1,"
+"0","    (response == ""Bottom"" & bin4_position == ""down"") ~ 1,"
+"0","    (response == ""Top"" & bin4_position == ""down"") ~ 0,"
+"0","    (response == ""Bottom"" & bin4_position == ""up"") ~ 0"
+"0","  ))"

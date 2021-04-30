@@ -1,0 +1,2 @@
+"0","controldf <- ggpredict(resnet_perf_control_model, terms = c(""resnet_perf [all]"", ""ai_correct""))"
+"0","#exampledf <- ggpredict(resnet_perf_example_model, terms = c(""resnet_perf [all]"", ""ai_correct""))"

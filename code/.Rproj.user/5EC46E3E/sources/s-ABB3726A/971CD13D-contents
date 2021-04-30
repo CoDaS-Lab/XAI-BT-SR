@@ -1,0 +1,346 @@
+---
+title: "XAI Bayesian Teaching Scientific Reports main analyses"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+# Load packages
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+library(lme4)
+```
+
+```{r}
+library(feather)
+```
+```{r}
+library(viridis)
+```
+```{r}
+library(ggnewscale)
+```
+
+
+```{r}
+library(gridExtra)
+```
+```{r}
+library(grid)
+```
+
+```{r}
+library(extrafont)
+```
+
+```{r}
+loadfonts(device = "win", quiet = T)
+```
+
+```{r}
+library(interactions)
+```
+
+```{r}
+library(ggeffects)
+```
+
+```{r}
+library(RColorBrewer)
+```
+
+### Citations and version info
+
+```{r}
+citation("ggplot2")
+```
+```{r}
+citation()
+```
+
+
+```{r}
+sessionInfo()
+```
+
+
+
+### Setting text size
+```{r}
+text_size = 25
+title_size = 40
+ylab_size = 30
+point_size = 3.5
+line_size = 4
+fat = 1.5
+font_style = "Arial"
+```
+
+
+## Helpful functions
+
+### Function for transforming logodds to probability
+```{r}
+logit2prob <- function(logit){
+  odds <- exp(logit)
+  prob <- odds / (1 + odds)
+  return(prob)
+}
+```
+
+### Computing confidence intervals
+```{r}
+intercept_probability_cis <- function(model){
+  logit_cis <- confint(model)
+  intercept <-  fixef(model)[1]
+  lower_ci <- logit_cis["(Intercept)", 1]
+  upper_ci <- logit_cis["(Intercept)", 2]
+  
+  intercept_prob <- logit2prob(intercept)
+  lower_ci_prob <- logit2prob(lower_ci)
+  upper_ci_prob <- logit2prob(upper_ci)
+  
+  probability_output <- list()
+  
+  probability_output["expectation"] <- round(intercept_prob, 4)
+  probability_output["lower_ci"] <- round(lower_ci_prob, 4) 
+  probability_output["upper_ci"] <- round(upper_ci_prob, 4)
+
+  probability_output
+  }
+```
+
+```{r}
+condition_probability_cis <- function(model){
+  logit_cis <- confint(model)
+  intercept <- fixef(model)[1] + fixef(model)[2]
+  lower_ci <- logit_cis["(Intercept)", 1] + logit_cis["explain_conditionexperimental_condition", 1]
+  upper_ci <- logit_cis["(Intercept)", 2] + logit_cis["explain_conditionexperimental_condition", 2]
+  
+  intercept_prob <- logit2prob(intercept)
+  lower_ci_prob <- logit2prob(lower_ci)
+  upper_ci_prob <- logit2prob(upper_ci)
+  
+  probability_output <- list()
+  
+  probability_output["expectation"] <- round(intercept_prob, 4)
+  probability_output["lower_ci"] <- round(lower_ci_prob, 4) 
+  probability_output["upper_ci"] <- round(upper_ci_prob, 4)
+
+  probability_output
+  }
+```
+
+
+# Supplementary Discussion D1: Do participants prefer helpful examples?
+
+
+## Load  preference data
+
+```{r}
+pref_df <- read_csv("../data/pref_data.csv") %>% 
+  select(-X1)
+```
+```{r}
+colnames(pref_df)
+```
+```{r}
+pref_df[, c("target_category", "stimulus")]
+```
+
+
+```{r}
+dim(pref_df)
+```
+
+```{r}
+pref_df <- pref_df %>%
+  filter(ground_truth != "mouse")
+```
+
+```{r}
+dim(pref_df)
+```
+## Append familiarity coding
+```{r}
+familiarity_coding <- read_csv("../data/familiarity_coding.csv")
+
+## use lower case
+familiarity_coding <- familiarity_coding %>%
+  mutate(target_category = tolower(target_category)) %>%
+  mutate(other_category = tolower(other_category))
+
+familiar_target <- familiarity_coding %>%
+  group_by(target_category) %>%
+  summarise(frac_familiar = sum(familiarity == "familiar")/n())
+
+familiar_target <- familiar_target %>%
+  mutate(familiarity = case_when(
+    frac_familiar == 0.5 ~ "unfamiliar",
+    frac_familiar > 0.5 ~ "familiar",
+    frac_familiar < 0.5 ~ "unfamiliar"
+  ))
+
+pref_df <- pref_df %>% left_join(familiar_target, 
+                         by=c("target_category"))
+```
+### Calculate performance
+```{r}
+pref_df <- pref_df %>%
+  mutate(chose_bin4 = case_when(
+    (response == "Top" & bin4_position == "up") ~ 1,
+    (response == "Bottom" & bin4_position == "down") ~ 1,
+    (response == "Top" & bin4_position == "down") ~ 0,
+    (response == "Bottom" & bin4_position == "up") ~ 0
+  ))
+```
+
+```{r}
+pref_df <- pref_df %>%
+  mutate(prediction_type_simplified = case_when(
+    prediction_type == "true_positive" ~ "correct",
+    prediction_type == "false_positive" ~ "incorrect",
+    prediction_type == "false_negative" ~ "incorrect"
+  ))
+```
+
+### Compute participants per condition and trials per participant
+```{r}
+pref_df %>%
+  group_by(experiment_condition) %>% 
+  count(subject_id) %>% 
+  summarise(mean(n), n_distinct(subject_id))
+```
+
+### Double check that both conditions are exposed to the same trials
+```{r}
+pref_df %>%
+  group_by(experiment_condition) %>% 
+  count(ground_truth) %>% 
+  pivot_wider(id_cols = ground_truth, names_from = experiment_condition, values_from = n) %>% 
+  mutate(condition_difference = bin4_vs_bin0 - bin4_vs_rand) %>% 
+  pull(condition_difference) %>% 
+  sum(.)
+```
+### Check the distribution of familiarity ratings for this experiment
+```{r}
+pref_df %>% 
+  count(frac_familiar)
+```
+
+## Modelling preference for the random and unhelpful condition, respectively
+
+```{r}
+base_model_random <- glmer(chose_bin4 ~ 1 + (1|subject_id), data = filter(pref_df, experiment_condition == "bin4_vs_rand"), family = "binomial",  control = glmerControl(optimizer="bobyqa"))
+summary(base_model_random)
+```
+```{r}
+random_cis <- intercept_probability_cis(base_model_random)
+random_cis
+```
+```{r}
+base_model_unhelpful <- glmer(chose_bin4 ~ 1 + (1|subject_id), data = filter(pref_df, experiment_condition == "bin4_vs_bin0"), family = "binomial")
+summary(base_model_unhelpful)
+```
+
+```{r}
+unhelpful_cis <- intercept_probability_cis(base_model_unhelpful)
+unhelpful_cis
+```
+## Testing if the conditions are significantly different
+
+```{r}
+base_model <- glmer(chose_bin4 ~ 1 + (1|subject_id), data = model.frame(familiarity_model), family = "binomial")
+summary(base_model)
+```
+
+
+```{r}
+condition_model <- glmer(chose_bin4 ~ 1 + (1|subject_id:experiment_condition) + (1|experiment_condition), data = model.frame(familiarity_model), family = "binomial")
+summary(condition_model)
+```
+```{r}
+anova(base_model, condition_model)
+```
+### They are!
+
+## Checking if the familiarity variable explains additional variance beyond the experimental conditions
+
+
+```{r}
+familiarity_model <- glmer(chose_bin4 ~ 1 + frac_familiar + (1|subject_id:experiment_condition) + (1|experiment_condition), data = pref_df, family = "binomial")
+summary(familiarity_model)
+```
+
+```{r}
+condition_model <- glmer(chose_bin4 ~ 1 + (1|subject_id:experiment_condition) + (1|experiment_condition), data = pref_df, family = "binomial")
+summary(condition_model)
+```
+
+
+```{r}
+anova(condition_model, familiarity_model)
+```
+## It does!
+
+## Preparing the preference figure
+
+```{r}
+pref_fig <- pref_df %>%
+  mutate(experiment_condition = ifelse(experiment_condition == "bin4_vs_bin0", "Unhelpful", "Random"),
+         experiment_condition = factor(experiment_condition, levels = c("Random", "Unhelpful"))) %>% 
+  group_by(experiment_condition, prediction_type_simplified, stimulus) %>% 
+  summarise(perf = mean(chose_bin4), familiarity = mean(frac_familiar)) %>% 
+  ggplot(aes(y = perf, x = experiment_condition, fill = experiment_condition)) +
+  geom_violin() +
+  geom_hline(aes(yintercept=0.5), color="gray30", linetype="dashed", size=2) +
+  geom_point(size=3, position = position_dodge2(width=.15), alpha =0.5, show.legend = FALSE) +
+  stat_summary(fun.data = "mean_cl_boot", size = 4, fatten = 1.5, show.legend = FALSE) +
+  scale_fill_manual(values = c("orange1", "darkorange3")) +
+  labs(y = "P(choosing helpful examples)", x = "") +
+  ggtitle("A") +
+  ylim(0, 1) +
+  theme_minimal() +
+  theme(text = element_text(size=30, family = font_style), axis.text.x = element_blank(), axis.title.y = element_text(size=30, family = font_style),
+        plot.title = element_text(size=title_size, family = font_style), legend.position = "bottom", legend.title=element_blank(),
+        legend.text = element_text(size=30, family = font_style),
+        legend.spacing.x = unit(2, 'cm'))
+pref_fig
+```
+
+```{r}
+fam_fig <- pref_df %>%
+  mutate(experiment_condition = ifelse(experiment_condition == "bin4_vs_bin0", "Unhelpful", "Random"),
+         experiment_condition = factor(experiment_condition, levels = c("Random", "Unhelpful")),
+         familiarity = ifelse(familiarity == "familiar", "Familiar", "Unfamiliar")) %>% 
+  group_by(experiment_condition, familiarity, prediction_type_simplified, stimulus) %>% 
+  summarise(perf = mean(chose_bin4)) %>% 
+  ggplot(aes(y = perf, x = familiarity, color = experiment_condition, group = experiment_condition)) +
+  geom_hline(aes(yintercept=0.5), color="gray30", linetype="dashed", size=2) +
+  geom_point(size=3, position = position_dodge2(width=.3), alpha =0.5) +
+  stat_summary(fun.data = "mean_cl_boot", size = 4, fatten = 1.5, show.legend = FALSE,
+               position = position_dodge2(width=.3)) +
+  stat_summary(fun = "mean", geom="line", size = 4, show.legend = FALSE,
+               position = position_dodge2(width=.3)) +
+  scale_color_manual(values = c("orange1", "darkorange3")) +
+  labs(y = "P(choosing helpful examples)", x = "Stimulus category") +
+  ggtitle("B") +
+  ylim(0, 1) +
+  theme_minimal() +
+  theme(text = element_text(size=30, family = font_style), axis.text.y = element_text(size = 15, family = font_style),
+        axis.title.x = element_text(vjust = -0.5),
+        plot.title = element_text(size=title_size, family = font_style), legend.position = "None",
+        axis.text.x = element_text(size=30, family = font_style),
+        plot.margin = unit(c(0,0,0.5,0), "cm")
+        )
+```
+```{r}
+grid.arrange(pref_fig, fam_fig, ncol=2, nrow = 1, widths=c(1, 1), newpage = TRUE)
+dev.copy(svg, "../output/supplementary_figure_explanation_preference.svg", width = 21, height = 7)
+dev.off()
+```

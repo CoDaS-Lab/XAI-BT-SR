@@ -1,0 +1,22 @@
+"0","install.packages(""ggnewscale"", version = ""0.4.3"", repos = ""http://cran.us.r-project.org"")"
+"2","Installing package into ‘C:/Users/tomas/OneDrive/Documents/GitHub/XAI-BT-SR/code/packrat/lib/x86_64-w64-mingw32/4.0.3’
+(as ‘lib’ is unspecified)
+"
+"2","trying URL 'http://cran.us.r-project.org/bin/windows/contrib/4.0/ggnewscale_0.4.5.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 188413 bytes (183 KB)
+"
+"2","downloaded 183 KB
+
+"
+"1","package â€˜ggnewscaleâ€™ successfully unpacked and MD5 sums checked
+"
+"1","
+"
+"1",""
+"1","The downloaded binary packages are in
+	C:\Users\tomas\AppData\Local\Temp\RtmpaEAlu2\downloaded_packages"
+"1",""
+"1","
+"

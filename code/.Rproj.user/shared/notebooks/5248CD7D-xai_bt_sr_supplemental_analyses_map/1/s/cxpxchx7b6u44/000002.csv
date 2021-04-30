@@ -1,0 +1,5 @@
+"0","logit2prob <- function(logit){"
+"0","  odds <- exp(logit)"
+"0","  prob <- odds / (1 + odds)"
+"0","  return(prob)"
+"0","}"

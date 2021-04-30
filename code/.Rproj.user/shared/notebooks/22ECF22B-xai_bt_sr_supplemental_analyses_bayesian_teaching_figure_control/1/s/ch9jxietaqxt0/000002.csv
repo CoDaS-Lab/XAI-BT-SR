@@ -1,0 +1,2 @@
+"0","df <- df %>% "
+"0","  mutate(teaching_condition = factor(teaching_condition, levels = c(""random"", ""helpful"")))"

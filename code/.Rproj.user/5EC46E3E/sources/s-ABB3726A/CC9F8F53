@@ -1,0 +1,24 @@
+{
+    "id": "CC9F8F53",
+    "path": "~/GitHub/XAI-BT-SR/code/xai_bt_sr_primary_analyses.rmd",
+    "project_path": "xai_bt_sr_primary_analyses.rmd",
+    "type": "r_markdown",
+    "hash": "1477947145",
+    "contents": "",
+    "dirty": false,
+    "created": 1619799901520.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "cursorPosition": "72,43",
+        "scrollLine": "64"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1619807406,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1619807406034,
+    "read_only": false,
+    "read_only_alternatives": []
+}

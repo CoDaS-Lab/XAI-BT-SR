@@ -1,0 +1,28 @@
+"0","familiarity_coding <- read_csv(""../data/familiarity_coding.csv"")"
+"2","
+[36m--[39m [1m[1mColumn specification[1m[22m [36m-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------[39m
+cols(
+  target_category = [31mcol_character()[39m,
+  other_category = [31mcol_character()[39m,
+  familiarity = [31mcol_character()[39m
+)
+
+"
+"0","## use lower case"
+"0","familiarity_coding <- familiarity_coding %>%"
+"0","  mutate(target_category = tolower(target_category)) %>%"
+"0","  mutate(other_category = tolower(other_category))"
+"0",""
+"0","familiar_target <- familiarity_coding %>%"
+"0","  group_by(target_category) %>%"
+"0","  summarise(frac_familiar = sum(familiarity == ""familiar"")/n())"
+"0",""
+"0","familiar_target <- familiar_target %>%"
+"0","  mutate(familiarity = case_when("
+"0","    frac_familiar == 0.5 ~ ""unfamiliar"","
+"0","    frac_familiar > 0.5 ~ ""familiar"","
+"0","    frac_familiar < 0.5 ~ ""unfamiliar"""
+"0","  ))"
+"0",""
+"0","pref_df <- pref_df %>% left_join(familiar_target, "
+"0","                         by=c(""target_category""))"

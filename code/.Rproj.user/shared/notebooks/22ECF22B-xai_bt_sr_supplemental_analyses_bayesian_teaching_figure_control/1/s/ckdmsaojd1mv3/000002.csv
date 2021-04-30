@@ -1,0 +1,8 @@
+"0","explain_df <- df %>% "
+"0","  mutate(explain_condition = ifelse(examples_condition == ""no_examples"" & label_condition == ""labels"" & highlights_condition == ""no_highlights"", ""control_condition"","
+"0","                                    ifelse(teaching_condition == ""helpful"" & examples_condition == ""examples"" & label_condition == ""labels"" & highlights_condition != ""no_highlights"","
+"0","                                           ""experimental_condition"", NA))) %>% "
+"0","  filter(!is.na(explain_condition)) %>% "
+"0","  mutate(explain_condition = factor(explain_condition, levels = c(""control_condition"", ""experimental_condition"")))"
+"0","explain_df %>% "
+"0","  count(explain_condition)"

@@ -1,0 +1,6 @@
+"0","pref_df <- pref_df %>%"
+"0","  mutate(prediction_type_simplified = case_when("
+"0","    prediction_type == ""true_positive"" ~ ""correct"","
+"0","    prediction_type == ""false_positive"" ~ ""incorrect"","
+"0","    prediction_type == ""false_negative"" ~ ""incorrect"""
+"0","  ))"

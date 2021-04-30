@@ -1,0 +1,13 @@
+"0","library(lme4)"
+"2","package ‘lme4’ was built under R version 4.0.5"
+"2","Loading required package: Matrix
+"
+"2","
+Attaching package: ‘Matrix’
+
+"
+"2","The following objects are masked from ‘package:tidyr’:
+
+    expand, pack, unpack
+
+"

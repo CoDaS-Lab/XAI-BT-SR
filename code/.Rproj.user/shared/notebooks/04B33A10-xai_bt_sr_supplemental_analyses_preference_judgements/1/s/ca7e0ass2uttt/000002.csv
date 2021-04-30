@@ -1,0 +1,28 @@
+"0","random_cis <- intercept_probability_cis(base_model_random)"
+"2","Computing profile confidence intervals ...
+"
+"0","random_cis"
+"1","$expectation
+"
+"1","[1]"
+"1"," 0.5305"
+"1","
+"
+"1","
+"
+"1","$lower_ci
+"
+"1","[1]"
+"1"," 0.5108"
+"1","
+"
+"1","
+"
+"1","$upper_ci
+"
+"1","[1]"
+"1"," 0.5501"
+"1","
+"
+"1","
+"

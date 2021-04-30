@@ -1,0 +1,28 @@
+"0","explain_cis_specificity <- condition_probability_cis(explain_specificity)"
+"2","Computing profile confidence intervals ...
+"
+"0","explain_cis_specificity"
+"1","$expectation
+"
+"1","[1]"
+"1"," 0.4398"
+"1","
+"
+"1","
+"
+"1","$lower_ci
+"
+"1","[1]"
+"1"," 0.3968"
+"1","
+"
+"1","
+"
+"1","$upper_ci
+"
+"1","[1]"
+"1"," 0.4837"
+"1","
+"
+"1","
+"

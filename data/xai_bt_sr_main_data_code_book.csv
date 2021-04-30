@@ -1,0 +1,32 @@
+﻿Column,Description
+examples_condition,"Experimental condition, whether examples were shown or not."
+teaching_condition,"Experimental condition, whether the examples shown were selected to be helpful according to the Bayesian Teacher."
+rt,Response time in milliseconds.
+stimulus,The target stimulus image.
+response,The response category selected by the human participant.
+correct,The response category selected by the AI (the response the human participant attempted to predict).
+trial_number,The presentation order of the trials.
+y_teaching_bin,The binned helpfulness of the examples shown (4 is most helpful 1 is least helpful).
+prediction_type,"Whether the AI prediction was a true positive, a false positive or a false negative."
+ground_truth,The ground truth class of the target image.
+target_category,The AI classification of the target image.
+other_category,Either the ground-truth class (when the AI made a mistake) or the most confusable class of the target image (when the AI was correct).
+category_target_example_one,Image file for the first target example.
+category_target_example_two,Image file for the second target example.
+category_other_example_one,Image file for the first other example.
+category_other_example_two,Image file for the second other example.
+trial_order,The trial order in the experimental file (all trials with the same trial order contain the same target and the same classification options)
+trial_index,
+time_elapsed,Total time elapsed during the experimental session (including instructions and consent) in milliseconds.
+subject_id,Unique participant identifier.
+age,Participant self-reported age in years.
+gender,Participant self-reported gender.
+country,Participant self-reported country of residence.
+label_condition,Label condition (whether the categories had informative labels or not)
+highlights_condition,"The format of the saliency map used on a given trial (no saliency map, semi-transparent jet colored heatmap or blur)"
+total_time,Total time to complete the experimen in seconds.
+resnet_perf,The average classification accuracy for ResNet-50 for the target category.
+familiar,Familiarity as a binary variable from a median split.
+logp_learner_matches_target_model,The log-probability that the learner model makes the same classification as the target model conditional on having seen the examples.
+familiar_yes_vote_fraction,Familiarity as a proportion of votes from human raters (different from the participants in this study).
+log_rt,The logarithm of the response time in milliseconds.

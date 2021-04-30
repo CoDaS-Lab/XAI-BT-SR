@@ -1,0 +1,22 @@
+"0","install.packages(""packrat"")"
+"2","Installing package into ‘C:/Users/tomas/OneDrive/Documents/R/win-library/4.0’
+(as ‘lib’ is unspecified)
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.0/packrat_0.6.0.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 479694 bytes (468 KB)
+"
+"2","downloaded 468 KB
+
+"
+"1","package â€˜packratâ€™ successfully unpacked and MD5 sums checked
+"
+"1","
+"
+"1",""
+"1","The downloaded binary packages are in
+	C:\Users\tomas\AppData\Local\Temp\RtmpYhv8W0\downloaded_packages"
+"1",""
+"1","
+"
