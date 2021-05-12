@@ -1,5 +1,0 @@
-"0","negative_fit_performance <- df %>% "
-"0","  filter(prediction_type != ""true_positive"") %>% "
-"0","  mutate(highlights_condition = factor(highlights_condition, ordered = F),"
-"0","         highlights_condition = relevel(highlights_condition, ref=""no_highlights"")) %>% "
-"0","  glmer(correct_response ~ examples_condition + highlights_condition + label_condition + familiar_yes_vote_fraction + resnet_perf + (1|subject_id), data =., family = ""binomial"", control = glmerControl(optimizer=""bobyqa""))"

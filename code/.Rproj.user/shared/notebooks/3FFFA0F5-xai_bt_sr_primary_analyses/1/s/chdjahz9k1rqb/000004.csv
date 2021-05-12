@@ -1,2 +1,0 @@
-"0","grid.text(""Model hit"", x = unit(0.55, ""npc""), y = unit(0.9, ""npc""), hjust = ""center"", gp = gpar(fontsize = 25, fontface = ""plain""))#+"
-"2","NAs introduced by coercion"

@@ -1,4 +1,0 @@
-"0","examples_df <- df %>% "
-"0","  mutate(example_contrast = ifelse(examples_condition == ""no_examples"" & label_condition == ""labels"" & highlights_condition == ""no_highlights"", ""control"", ifelse(teaching_condition == ""helpful"" & examples_condition == ""examples"" & label_condition == ""labels"" & highlights_condition == ""no_highlights"","
-"0","                                           ""examples"", NA))) %>% "
-"0","  filter(!is.na(example_contrast))"

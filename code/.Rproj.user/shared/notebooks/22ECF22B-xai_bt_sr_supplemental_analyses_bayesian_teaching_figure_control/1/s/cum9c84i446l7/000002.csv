@@ -1,1 +1,0 @@
-"0","mydf <- ggpredict(teacher_predictions_3, terms = c(""resnet_perf [all]"", ""ai_correct""))"

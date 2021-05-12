@@ -1,5 +1,0 @@
-"0","df %>% "
-"0","  group_by(prediction_type, correct_response) %>% "
-"0","  summarise(ground_truth_response_proportion = mean(ground_truth_response))"
-"2","`summarise()` has grouped output by 'prediction_type'. You can override using the `.groups` argument.
-"

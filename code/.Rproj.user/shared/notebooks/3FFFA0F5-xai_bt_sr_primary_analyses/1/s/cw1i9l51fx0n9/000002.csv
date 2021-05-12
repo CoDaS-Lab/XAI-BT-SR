@@ -1,4 +1,0 @@
-"0","teacher_predictions_3 <- df %>% "
-"0","  filter(examples_condition == ""examples"") %>% "
-"0","  mutate(ai_correct = as.numeric(prediction_type == ""true_positive"")) %>% "
-"0","  glmer(correct_response ~ p_learner_matches_target_model + resnet_perf + ai_correct + ai_correct:resnet_perf + ai_correct:p_learner_matches_target_model + (1|subject_id), data = ., family = ""binomial"", control = glmerControl(optimizer=""bobyqa""))"

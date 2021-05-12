@@ -1,1 +1,0 @@
-"0","grid.arrange(familiarity_match_ai, arrangeGrob(familiarity_highlights_interaction_hit2, familiarity_highlights_interaction_error2, ncol=2, widths = c(1, 1.3)), arrangeGrob(familiarity_examples_interaction_hit2, familiarity_examples_interaction_error2, ncol=2, widths = c(1, 1.3)), nrow=3, ncol = 1, heights=c(1.1, 1.5, 1.5), newpage = TRUE)"

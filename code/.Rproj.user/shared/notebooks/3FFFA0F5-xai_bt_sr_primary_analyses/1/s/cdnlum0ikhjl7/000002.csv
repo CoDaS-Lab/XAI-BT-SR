@@ -1,3 +1,0 @@
-"0","individual_perf %>% "
-"0","  filter(!is.na(explain_condition)) %>% "
-"0","  count(explain_condition)"

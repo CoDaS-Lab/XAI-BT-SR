@@ -1,8 +1,0 @@
-"0","library(devtools)"
-"2","Loading required package: usethis
-"
-"2","Error: package or namespace load failed for ‘usethis’:
- package ‘rlang’ does not have a namespace
-"
-"2","Error: package â€˜usethisâ€™ could not be loaded
-"

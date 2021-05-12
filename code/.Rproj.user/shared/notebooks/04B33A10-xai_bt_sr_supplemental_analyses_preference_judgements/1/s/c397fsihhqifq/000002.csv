@@ -1,4 +1,0 @@
-"0","pref_df %>%"
-"0","  group_by(experiment_condition) %>% "
-"0","  count(subject_id) %>% "
-"0","  summarise(mean(n), n_distinct(subject_id))"

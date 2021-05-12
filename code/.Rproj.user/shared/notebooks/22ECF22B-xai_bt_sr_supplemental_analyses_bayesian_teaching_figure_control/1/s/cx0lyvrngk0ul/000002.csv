@@ -1,6 +1,0 @@
-"0","df <- df %>%"
-"0","  mutate(response_classification = case_when("
-"0","    (prediction_type == ""true_positive"") & (response == correct) ~ ""hit"","
-"0","    (prediction_type == ""true_positive"") & (response != correct) ~ ""miss"","
-"0","    (prediction_type != ""true_positive"") & (response == correct) ~ ""correct_rejection"","
-"0","    (prediction_type != ""true_positive"") & (response != correct) ~ ""false_alarm""))"

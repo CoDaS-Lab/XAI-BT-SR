@@ -1,4 +1,0 @@
-"0","df <- df %>% "
-"0","  mutate(correct_response = as.numeric(correct == response),"
-"0","    choice_category = ifelse(correct_response == 1, target_category, other_category),"
-"0","         ground_truth_response = as.numeric(choice_category == ground_truth))"

@@ -1,1 +1,0 @@
-"0","explain_specificity <- glmer(correct_response ~ explain_condition + (1|subject_id), data = filter(explain_df, response_classification == ""correct_rejection"" | response_classification == ""false_alarm""), family = ""binomial"", control = glmerControl(optimizer=""bobyqa""))"
