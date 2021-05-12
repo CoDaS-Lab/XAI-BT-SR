@@ -1,6 +1,8 @@
 # XAI-BT-SR
 This repo contains the experimental data and analysis code for the following paper:
 
+Yang, S.CH., Vong, W.K., Sojitra, R.B., Folke, T. & Shafto, P. [Mitigating belief projection in explainable artificial intelligence via Bayesian teaching](https://www.nature.com/articles/s41598-021-89267-4). Scientific Reports 11, 9863 (2021). 
+
 ```
 @article{yang2021mitigating,
   title={Mitigating belief projection in explainable artificial intelligence via Bayesian Teaching},
