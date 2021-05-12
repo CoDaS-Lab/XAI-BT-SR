@@ -1,0 +1,374 @@
+# Load packages
+```{r}
+library(tidyverse)
+```
+
+```{r}
+library(lme4)
+```
+
+```{r}
+library(feather)
+```
+```{r}
+library(viridis)
+```
+```{r}
+library(ggnewscale)
+```
+
+
+```{r}
+library(gridExtra)
+```
+```{r}
+library(grid)
+```
+
+```{r}
+library(extrafont)
+```
+
+```{r}
+#fonttable()
+```
+
+```{r}
+library(interactions)
+```
+
+```{r}
+library(ggeffects)
+```
+
+```{r}
+library(RColorBrewer)
+```
+
+```{r}
+sessionInfo()
+```
+# Load the data
+
+### I'll only analyse the data without the 32 trials with negative RT
+```{r}
+df <- read_feather("../data/main_data_clean.feather")
+```
+
+
+# Data preparation
+
+### Code if participant picked the correct response as a binary variable and whether the participant response matches the ground truth of the image
+
+```{r}
+df <- df %>% 
+  mutate(correct_response = as.numeric(correct == response),
+    choice_category = ifelse(correct_response == 1, target_category, other_category),
+         ground_truth_response = as.numeric(choice_category == ground_truth))
+```
+
+### Verify that ground truth response is correctly encoded by cross-referencing it with the prediction type variable
+```{r}
+df %>% 
+  group_by(prediction_type, correct_response) %>% 
+  summarise(ground_truth_response_proportion = mean(ground_truth_response))
+```
+
+### Create group-level standardisation for the logarithm of response time
+```{r}
+df <- df %>%
+  group_by(subject_id) %>% 
+  mutate(z_log_rt =scale(log_rt)) %>% 
+  ungroup()
+```
+
+### Prepare bins for learner ratings and resnet ratings for figures
+```{r}
+df <- df %>% 
+  mutate(p_learner_matches_target_model = exp(logp_learner_matches_target_model),
+         p_learner_bins = cut(p_learner_matches_target_model, breaks = seq(0, 1, 0.25),
+                              include.lowest = T, labels = c("0-25%", "26-50%", "51-75%",
+                                                             "76-100%")),
+         resnet_perf_bins = cut(resnet_perf, breaks = seq(0, 1, 0.25), include.lowest = T, labels = c("0-25%", "26-50%", "51-75%",
+                                                             "76-100%")))
+```
+
+### Turn the teaching condition into a factor
+```{r}
+df <- df %>% 
+  mutate(teaching_condition = factor(teaching_condition, levels = c("random", "helpful")))
+```
+
+### SDT classifications
+```{r}
+df <- df %>%
+  mutate(response_classification = case_when(
+    (prediction_type == "true_positive") & (response == correct) ~ "hit",
+    (prediction_type == "true_positive") & (response != correct) ~ "miss",
+    (prediction_type != "true_positive") & (response == correct) ~ "correct_rejection",
+    (prediction_type != "true_positive") & (response != correct) ~ "false_alarm"))
+```
+
+
+# Do explanations by example help humans predict AI classification?
+
+### Setting text size
+```{r}
+text_size = 30
+title_size = 40
+ylab_size = 30
+point_size = 3.5
+line_size = 4
+fat = 1.5
+font_style = "sans"
+```
+
+## Formal models for intervention effectiveness
+
+### Function for transforming logodds to probability
+```{r}
+logit2prob <- function(logit){
+  odds <- exp(logit)
+  prob <- odds / (1 + odds)
+  return(prob)
+}
+```
+
+### Computing confidence intervals for the accuracy comparison
+```{r}
+intercept_probability_cis <- function(model){
+  logit_cis <- confint(model)
+  intercept <-  fixef(model)[1]
+  lower_ci <- logit_cis["(Intercept)", 1]
+  upper_ci <- logit_cis["(Intercept)", 2]
+  
+  intercept_prob <- logit2prob(intercept)
+  lower_ci_prob <- logit2prob(lower_ci)
+  upper_ci_prob <- logit2prob(upper_ci)
+  
+  probability_output <- list()
+  
+  probability_output["expectation"] <- round(intercept_prob, 4)
+  probability_output["lower_ci"] <- round(lower_ci_prob, 4) 
+  probability_output["upper_ci"] <- round(upper_ci_prob, 4)
+
+  probability_output
+  }
+```
+
+```{r}
+condition_probability_cis <- function(model){
+  logit_cis <- confint(model)
+  intercept <- fixef(model)[1] + fixef(model)[2]
+  lower_ci <- logit_cis["(Intercept)", 1] + logit_cis["explain_conditionexperimental_condition", 1]
+  upper_ci <- logit_cis["(Intercept)", 2] + logit_cis["explain_conditionexperimental_condition", 2]
+  
+  intercept_prob <- logit2prob(intercept)
+  lower_ci_prob <- logit2prob(lower_ci)
+  upper_ci_prob <- logit2prob(upper_ci)
+  
+  probability_output <- list()
+  
+  probability_output["expectation"] <- round(intercept_prob, 4)
+  probability_output["lower_ci"] <- round(lower_ci_prob, 4) 
+  probability_output["upper_ci"] <- round(upper_ci_prob, 4)
+
+  probability_output
+  }
+```
+
+# How does explanation-by-examples improve performance?
+
+## Map and Examples figure
+
+```{r}
+highlights_match_ai <- df %>%
+  mutate(highlights_condition = factor(highlights_condition, levels = c("no_highlights", "highlights", "blur"))) %>% 
+  ggplot(aes(x =highlights_condition, y = correct_response, color = prediction_type== "true_positive" , group = prediction_type== "true_positive")) +
+  stat_summary(fun.data = "mean_cl_boot", size=point_size, fatten = fat) +
+    stat_summary(fun = "mean", geom = "line", size=line_size) +
+  scale_color_manual(breaks = c(TRUE, FALSE), values =c("seagreen4", "seagreen1"), labels = c("Model hit", "Model error"), name="") +
+  ylab("Fidelity") +
+  xlab("") +
+  scale_x_discrete(labels = c("[NO MAP]", "[JET]", "[BLUR]"))+
+  ylim(0,1) +
+  theme_minimal() +
+  guides(color = guide_legend(nrow = 1)) +
+  ggtitle("A") +
+  theme(text = element_text(size=text_size, family = font_style), axis.title.y = element_text(size=ylab_size, family = font_style),
+        plot.title = element_text(size=title_size, family = font_style, vjust = -6),
+    legend.position="top", 
+    legend.justification = "left", 
+    legend.margin = margin(0, 0, 0, 0),
+    legend.spacing.x = unit(1.5, "cm"),
+    legend.text = element_text(margin = margin(l = -40)),
+    legend.key.size = unit(1, "cm")
+    )
+highlights_match_ai
+```
+
+```{r}
+highlights_match_gt <- df %>%
+  mutate(highlights_condition = factor(highlights_condition, levels = c("no_highlights", "highlights", "blur"))) %>% 
+  ggplot(aes(x =highlights_condition, y = ground_truth_response, color = prediction_type== "true_positive" , group = prediction_type== "true_positive")) +
+  stat_summary(fun.data = "mean_cl_boot", size = point_size, fatten = fat) +
+  stat_summary(fun = "mean", geom = "line", size=line_size) +
+  scale_color_manual(breaks = c(TRUE, FALSE), values =c("orchid4", "orchid1"), labels = c("Model hit", "Model error"), name="") +
+  ylab("Accuracy") +
+  xlab("") +
+  scale_x_discrete(labels = c("[NO MAP]", "[JET]", "[BLUR]")) +
+ guides(color = guide_legend(nrow = 1)) +
+  ggtitle("B") +
+  ylim(0, 1) +
+  theme_minimal() +
+  theme(text = element_text(size=text_size, family = font_style), axis.title.y = element_text(size=ylab_size, family = font_style),
+        plot.title = element_text(size=title_size, family = font_style, vjust = -6),
+        legend.position="top", 
+    legend.justification = "left", 
+    legend.margin = margin(0, 0, 0, 0),
+    legend.spacing.x = unit(1.5, "cm"),
+    legend.text = element_text(margin = margin(l = -40)),
+    legend.key.size = unit(1, "cm")
+    )
+highlights_match_gt
+```
+
+### Calculate sample sizes and number of observations
+
+```{r}
+ n_distinct(df$subject_id)
+```
+```{r}
+dim(df)
+```
+## Fit the models showing the results of main effects analyses
+
+```{r}
+positive_fit_performance <- df %>% 
+  filter(prediction_type == "true_positive") %>% 
+  mutate(highlights_condition = factor(highlights_condition, ordered = F),
+         highlights_condition = relevel(highlights_condition, ref="no_highlights")) %>% 
+  glmer(correct_response ~ examples_condition + highlights_condition + label_condition + familiar_yes_vote_fraction + resnet_perf + (1|subject_id), data =., family = "binomial", control = glmerControl(optimizer="bobyqa"))
+```
+
+```{r}
+summary(positive_fit_performance)
+```
+
+
+```{r}
+negative_fit_performance <- df %>% 
+  filter(prediction_type != "true_positive") %>% 
+  mutate(highlights_condition = factor(highlights_condition, ordered = F),
+         highlights_condition = relevel(highlights_condition, ref="no_highlights")) %>% 
+  glmer(correct_response ~ examples_condition + highlights_condition + label_condition + familiar_yes_vote_fraction + resnet_perf + (1|subject_id), data =., family = "binomial", control = glmerControl(optimizer="bobyqa"))
+```
+
+```{r}
+summary(negative_fit_performance)
+```
+```{r}
+positive_fit_accuracy <- df %>% 
+  filter(prediction_type == "true_positive") %>% 
+    mutate(highlights_condition = factor(highlights_condition, ordered = F),
+         highlights_condition = relevel(highlights_condition, ref="no_highlights")) %>% 
+  glmer(ground_truth_response ~ examples_condition + highlights_condition + label_condition + familiar_yes_vote_fraction + resnet_perf + (1|subject_id), data =., family = "binomial", control = glmerControl(optimizer="bobyqa"))
+```
+
+```{r}
+summary(positive_fit_accuracy)
+```
+
+
+```{r}
+negative_fit_accuracy <- df %>% 
+  filter(prediction_type != "true_positive") %>% 
+    mutate(highlights_condition = factor(highlights_condition, ordered = F),
+         highlights_condition = relevel(highlights_condition, ref="no_highlights")) %>% 
+  glmer(ground_truth_response ~ examples_condition + highlights_condition + label_condition + familiar_yes_vote_fraction + resnet_perf + (1|subject_id), data =., family = "binomial", control = glmerControl(optimizer="bobyqa"))
+```
+
+```{r}
+summary(negative_fit_accuracy)
+```
+# The role of familiarity
+
+## Running the interaction models
+
+```{r}
+negative_fit_interaction <- df %>% 
+  filter(prediction_type != "true_positive") %>% 
+    mutate(highlights_condition = factor(highlights_condition, ordered = F),
+         highlights_condition = relevel(highlights_condition, ref="no_highlights")) %>% 
+  glmer(correct_response ~ examples_condition + highlights_condition + label_condition + familiar_yes_vote_fraction + resnet_perf + familiar_yes_vote_fraction:highlights_condition + (1|subject_id), data =., family = "binomial", control = glmerControl(optimizer="bobyqa"))
+```
+
+```{r}
+summary(negative_fit_interaction)
+```
+
+```{r}
+positive_fit_interaction <- df %>% 
+  filter(prediction_type == "true_positive") %>% 
+    mutate(highlights_condition = factor(highlights_condition, ordered = F),
+         highlights_condition = relevel(highlights_condition, ref="no_highlights")) %>% 
+  glmer(correct_response ~ examples_condition + highlights_condition + label_condition + familiar_yes_vote_fraction + resnet_perf + familiar_yes_vote_fraction:highlights_condition + (1|subject_id), data =., family = "binomial", control = glmerControl(optimizer="bobyqa"))
+```
+
+```{r}
+summary(positive_fit_interaction)
+```
+
+## Plotting the familiarity figure
+
+
+```{r}
+familiarity_highlights_interaction_error <- interact_plot(negative_fit_interaction,
+              pred = familiar_yes_vote_fraction,
+              modx = highlights_condition,
+              interval = TRUE,
+              int.width = 0.95,
+              #colors = c("tomato3", "skyblue2"),
+              legend.main = "",
+              modx.labels = c("[NO MAP]", "[BLUR]", "[JET]"),
+              line.thickness = 2) +
+  labs(x ="Familiarity score", y = "Fidelity") +
+  ggtitle("                  Model Error") +
+  ylim(0, 1) +
+  theme(plot.title = element_text(size=title_size, family = font_style, vjust = 0, color = "Black", face = "plain"),
+        text = element_text(size=text_size, family = font_style, color = "Black"),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, family = font_style),
+         axis.text.y = element_text(family = font_style),
+        axis.title = element_text(family = font_style, face = "plain")) #+
+familiarity_highlights_interaction_error
+```
+
+```{r}
+familiarity_highlights_interaction_hit <- interact_plot(positive_fit_interaction,
+              pred = familiar_yes_vote_fraction,
+              modx = highlights_condition,
+              interval = TRUE,
+              int.width = 0.95,
+              #colors = c("tomato3", "skyblue2"),
+              legend.main = "",
+              #modx.labels = c("No highlights", "Highlights"),
+              line.thickness = 2) +
+  labs(x ="Familiarity score", y = "Fidelity") +
+  ggtitle("C               Model Hit") +
+  ylim(0, 1) +
+  theme(plot.title = element_text(size=title_size, family = font_style, vjust = 0, face="plain"),
+        text = element_text(size=text_size, family = font_style, color="Black"),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, family = font_style),
+        axis.text.y = element_text(family = font_style),
+        axis.title = element_text(family = font_style, face = "plain"),
+        legend.position = "None") #+
+familiarity_highlights_interaction_hit
+```
+
+```{r}
+grid.arrange(arrangeGrob(highlights_match_ai, highlights_match_gt, ncol = 2),
+             arrangeGrob(familiarity_highlights_interaction_hit, familiarity_highlights_interaction_error, ncol = 2, widths = c(1, 1.3)),
+             ncol=1, nrow=2, newpage = TRUE)
+dev.copy(pdf, "../output/Figd2.pdf", width = 20, height = 14)
+dev.off()
+```
