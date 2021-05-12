@@ -14,5 +14,7 @@ This repo contains the experimental data and analysis code for the following pap
 ```
 
 The analysis code has been tested in RStudio on Windows and Mac.
-Run the codes in **code/main.rmd** to obtain Figures 3-6 in the paper.
-The other 3 files in the code folder are named after the figures as presented in the Supplementary Information. 
+
+Run the code in **code/main.rmd** to obtain Figures 3-6 in the paper.
+
+The other 3 files in the code folder are named after the figures as presented in the Supplementary Information (SI). Run them to obtain the figures in the SI.
